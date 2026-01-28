@@ -1,6 +1,9 @@
 # Docker image tarballs
 *.tar
 
+# Pip cache (downloaded packages)
+pip-cache/
+
 # Models directory
 models/
 
