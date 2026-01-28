@@ -17,3 +17,4 @@ __pycache__/
 
 # Claude settings
 .claude/
+CLAUDE.md
