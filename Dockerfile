@@ -46,4 +46,9 @@ ENV MODEL_PATH=
 
 EXPOSE 30000
 
+# OpenShift compatibility: run as arbitrary UID with group 0
+RUN chgrp -R 0 /app && chmod -R g=u /app
+RUN mkdir -p /tmp /.cache /.triton /.config && chmod 775 /tmp /.cache /.triton /.config
+USER 1001
+
 CMD ["sh", "-c", "sglang serve --model-path $MODEL_PATH --port 30000 --host 0.0.0.0"]
