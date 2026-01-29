@@ -1,14 +1,14 @@
 # GLM-Image Server using SGLang
 # Following OFFICIAL installation from https://huggingface.co/zai-org/GLM-Image
 #
-# Base image (devel): Python 3.11, PyTorch 2.9.1, CUDA 12.8, cuDNN 9, nvcc
+# Base image includes: Python 3.11, PyTorch 2.9.1, CUDA 12.8, cuDNN 9
 # Target: H20 (production), A100 (testing)
 #
 # Run (OpenShift/offline):
 #   Set MODEL_PATH env var to your mounted model path
 #   No internet required - uses local model path
 
-FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-devel
+FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -50,8 +50,9 @@ EXPOSE 30000
 RUN apt-get update && apt-get install -y --no-install-recommends libnuma1 \
     && rm -rf /var/lib/apt/lists/*
 
-# flash-attn for optimal performance on Hopper GPUs (H20/H100)
-RUN pip install --no-cache-dir flash-attn --no-build-isolation
+# build-essential (gcc) required by Triton for JIT compilation at runtime
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # OpenShift compatibility: run as arbitrary UID with group 0
 RUN chgrp -R 0 /app && chmod -R g=u /app

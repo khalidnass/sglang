@@ -163,11 +163,33 @@ On H20/H100 GPUs, you may see:
 ```
 flash_attn 3 package is not installed. It's recommended to install flash_attn3 on hopper, otherwise performance is sub-optimal
 ```
-**Fix**: Add to Dockerfile before USER line:
+**Fix**: Use `devel` base image (has nvcc) and add to Dockerfile:
 ```dockerfile
+FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-devel
+# ... other steps ...
 RUN pip install flash-attn --no-build-isolation
 ```
-Note: Build requires significant time and memory.
+Note: Build takes 10-30 minutes. Fixed in v0.4.2+.
+
+### Pod OOMKilled during model loading
+Model loading requires ~40-50GB RAM. If pod is killed immediately without error logs, check memory limit.
+
+**Fix**: Set memory limit to 64Gi in your deployment:
+```yaml
+resources:
+  limits:
+    memory: 64Gi
+    nvidia.com/gpu: 1
+  requests:
+    memory: 32Gi
+```
+
+### Triton JIT compilation fails - missing C compiler
+If you see `Failed to find C compiler. Please specify via CC environment variable`:
+```
+RuntimeError: Failed to find C compiler. Please specify via CC environment variable or set triton.knobs.build.impl.
+```
+**Fix**: Add `build-essential` to Dockerfile. Fixed in v0.4.2+.
 
 ### libnuma.so.1 missing
 If you see `ImportError: libnuma.so.1: cannot open shared object file`, the `libnuma1` package is missing. This is required by sgl_kernel for GPU operations. Fixed in v0.4.1+.
