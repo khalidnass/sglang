@@ -46,6 +46,10 @@ ENV MODEL_PATH=
 
 EXPOSE 30000
 
+# libnuma1 required by sgl_kernel for GPU operations
+RUN apt-get update && apt-get install -y --no-install-recommends libnuma1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # OpenShift compatibility: run as arbitrary UID with group 0
 RUN chgrp -R 0 /app && chmod -R g=u /app
 RUN mkdir -p /tmp /.cache /.triton /.config && chmod 775 /tmp /.cache /.triton /.config

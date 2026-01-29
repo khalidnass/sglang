@@ -25,7 +25,7 @@ OpenShift compatible - runs as non-root user with arbitrary UID support.
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.0
+  glm-image-sglang:v0.4.1
 ```
 
 ### 3. Access the API
@@ -36,11 +36,11 @@ docker run --gpus all -p 30000:30000 \
 ## Load from tar (offline deployment)
 
 ```bash
-docker load -i glm-image-sglang-v0.4.0.tar
+docker load -i glm-image-sglang-v0.4.1.tar
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.0
+  glm-image-sglang:v0.4.1
 ```
 
 ## API Endpoints
@@ -141,6 +141,14 @@ with open("generated.png", "wb") as f:
 - **Dimensions**: Must be divisible by 32 (e.g., 1024x1024, 1152x896, 896x1152)
 - **Quality**: Increase `num_inference_steps` (50-100) for better results
 - **Reproducibility**: Use same `seed` value to get identical outputs
+
+## Known Issues
+
+### libnuma.so.1 missing
+If you see `ImportError: libnuma.so.1: cannot open shared object file`, the `libnuma1` package is missing. This is required by sgl_kernel for GPU operations. Fixed in v0.4.1+.
+
+### Version pinning does not work
+SGLang, diffusers, and transformers must be installed from git main branch. Pinned versions (e.g., sglang v0.5.8) fail to run with GLM-Image.
 
 ## License
 
