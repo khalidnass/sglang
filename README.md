@@ -144,6 +144,17 @@ with open("generated.png", "wb") as f:
 
 ## Known Issues
 
+### flash_attn3 not installed (Hopper GPUs)
+On H20/H100 GPUs, you may see:
+```
+flash_attn 3 package is not installed. It's recommended to install flash_attn3 on hopper, otherwise performance is sub-optimal
+```
+**Fix**: Add to Dockerfile before USER line:
+```dockerfile
+RUN pip install flash-attn --no-build-isolation
+```
+Note: Build requires significant time and memory.
+
 ### libnuma.so.1 missing
 If you see `ImportError: libnuma.so.1: cannot open shared object file`, the `libnuma1` package is missing. This is required by sgl_kernel for GPU operations. Fixed in v0.4.1+.
 
