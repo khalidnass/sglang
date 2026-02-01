@@ -54,6 +54,12 @@ Single devel image Docker build:
 
 ## Known Issues
 
+### Image editing may not work
+- Error: `RuntimeError: Model generation returned no output. Error from scheduler: cat() received an invalid combination of arguments`
+- This is a bug in SGLang's `/v1/images/edits` endpoint for GLM-Image
+- Text-to-image (`/v1/images/generations`) works correctly
+- Workaround: Use text-to-image only, or try updating SGLang to latest git main
+
 ### Version pinning does not work
 - **Do NOT pin SGLang** - v0.5.8 fails to run; must use git main branch
 - **Do NOT pin diffusers** - GLM-Image support requires git main

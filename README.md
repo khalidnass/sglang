@@ -96,15 +96,18 @@ curl http://localhost:30000/v1/images/generations \
   }' | python3 -c "import sys, json, base64; open('output.png', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
 ```
 
-### Image-to-Image
+### Image-to-Image (Edit)
 
 ```bash
-curl -X POST http://localhost:30000/v1/images/edits \
+curl -s -X POST "http://localhost:30000/v1/images/edits" \
+  -F "model=zai-org/GLM-Image" \
   -F "image=@input.jpg" \
-  -F "prompt=Replace the background with a space station" \
+  -F "prompt=Replace the background with a snow forest" \
   -F "response_format=b64_json" \
   | python3 -c "import sys, json, base64; open('edited.png', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
 ```
+
+> **Note**: Image editing may have issues in some SGLang versions. If you get a `RuntimeError: Model generation returned no output`, try updating SGLang or use text-to-image generation instead.
 
 ### Python Examples
 
