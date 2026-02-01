@@ -25,7 +25,7 @@ OpenShift compatible - runs as non-root user with arbitrary UID support.
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.1
+  glm-image-sglang:v0.4.4
 ```
 
 ### 3. Access the API
@@ -36,11 +36,11 @@ docker run --gpus all -p 30000:30000 \
 ## Load from tar (offline deployment)
 
 ```bash
-docker load -i glm-image-sglang-v0.4.1.tar
+docker load -i glm-image-sglang-v0.4.4.tar
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.1
+  glm-image-sglang:v0.4.4
 ```
 
 ## API Endpoints
@@ -105,7 +105,34 @@ curl -X POST http://localhost:30000/v1/images/edits \
   | python3 -c "import sys, json, base64; open('edited.png', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
 ```
 
-### Using OpenAI Python Client
+### Python with requests
+
+```python
+import requests
+import base64
+
+response = requests.post(
+    "http://localhost:30000/v1/images/generations",
+    json={
+        "prompt": "A cat sitting on a mountain",
+        "size": "1024x1024",
+        "response_format": "b64_json"
+    },
+    timeout=600
+)
+
+data = response.json()
+img_bytes = base64.b64decode(data["data"][0]["b64_json"])
+
+with open("output.png", "wb") as f:
+    f.write(img_bytes)
+```
+
+### Python with OpenAI SDK
+
+```bash
+pip install openai
+```
 
 ```python
 from openai import OpenAI
