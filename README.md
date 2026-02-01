@@ -1,6 +1,15 @@
-# GLM-Image Server (SGLang)
+# GLM-Image + Wan 2.2 Server (SGLang)
 
-Docker-based server for [GLM-Image](https://huggingface.co/zai-org/GLM-Image) using SGLang with **OpenAI-compatible API**.
+Docker-based server for image and video generation using SGLang with **OpenAI-compatible API**.
+
+## Supported Models (v0.5.0)
+
+| Model | Type | HuggingFace |
+|-------|------|-------------|
+| GLM-Image | Image generation/editing | [zai-org/GLM-Image](https://huggingface.co/zai-org/GLM-Image) |
+| Wan 2.2 T2V | Text-to-video | [Wan-AI/Wan2.2-T2V-A14B-Diffusers](https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B-Diffusers) |
+| Wan 2.2 I2V | Image-to-video | [Wan-AI/Wan2.2-I2V-A14B-Diffusers](https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B-Diffusers) |
+| Wan 2.2 TI2V | Text+image-to-video | [Wan-AI/Wan2.2-TI2V-5B-Diffusers](https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B-Diffusers) |
 
 Tested on **NVIDIA H20 GPUs**. OpenShift compatible - runs as non-root user with arbitrary UID support.
 
@@ -22,34 +31,66 @@ Tested on **NVIDIA H20 GPUs**. OpenShift compatible - runs as non-root user with
 
 ### 2. Run the server
 
+**GLM-Image (image generation):**
 ```bash
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.4
+  glm-image-sglang:v0.5.0
+```
+
+**Wan 2.2 T2V (text-to-video):**
+```bash
+docker run --gpus all -p 30000:30000 \
+  -e MODEL_PATH=/app/models/Wan2.2-T2V-A14B-Diffusers \
+  -v ./models:/app/models \
+  glm-image-sglang:v0.5.0
+```
+
+**Wan 2.2 I2V (image-to-video):**
+```bash
+docker run --gpus all -p 30000:30000 \
+  -e MODEL_PATH=/app/models/Wan2.2-I2V-A14B-Diffusers \
+  -v ./models:/app/models \
+  glm-image-sglang:v0.5.0
 ```
 
 ### 3. Access the API
 
 - API: http://localhost:30000
-- Endpoints: `/v1/images/generations`, `/v1/images/edits`, `/v1/models`
+- Image endpoints: `/v1/images/generations`, `/v1/images/edits`
+- Video endpoints: `/v1/video/generations`
+- Info: `/v1/models`, `/health`
 
 ## Load from tar (offline deployment)
 
 ```bash
-docker load -i glm-image-sglang-v0.4.4.tar
+docker load -i glm-image-sglang-v0.5.0.tar
 docker run --gpus all -p 30000:30000 \
   -e MODEL_PATH=/app/models/GLM-Image \
   -v ./models:/app/models \
-  glm-image-sglang:v0.4.4
+  glm-image-sglang:v0.5.0
 ```
 
 ## API Endpoints
+
+### Image (GLM-Image)
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/v1/images/generations` | POST | Text-to-image generation |
 | `/v1/images/edits` | POST | Image-to-image editing |
+
+### Video (Wan 2.2)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/video/generations` | POST | Text-to-video or image-to-video generation |
+
+### Info
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
 | `/v1/models` | GET | List available models |
 | `/health` | GET | Health check |
 
@@ -82,6 +123,21 @@ docker run --gpus all -p 30000:30000 \
 | `guidance_scale` | float | 1.5 | Prompt adherence strength |
 | `seed` | int | random | For reproducible results |
 
+### Video Generation (`/v1/video/generations`) - Wan 2.2
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `prompt` | string | required | Text description for video |
+| `model` | string | auto | Model identifier (uses MODEL_PATH) |
+| `image` | file | optional | Input image for I2V/TI2V models |
+| `size` | string | 832x480 | Video dimensions (width x height) |
+| `num_frames` | int | 81 | Number of frames (affects video length) |
+| `fps` | int | 16 | Frames per second |
+| `num_inference_steps` | int | 50 | Diffusion steps |
+| `guidance_scale` | float | 5.0 | Prompt adherence strength |
+| `seed` | int | random | For reproducible results |
+| `response_format` | string | b64_json | `b64_json` or `url` |
+
 ## Examples
 
 ### Text-to-Image
@@ -108,6 +164,32 @@ curl -s -X POST "http://localhost:30000/v1/images/edits" \
 ```
 
 > **Note**: Image editing may have issues in some SGLang versions. If you get a `RuntimeError: Model generation returned no output`, try updating SGLang or use text-to-image generation instead.
+
+### Text-to-Video (Wan 2.2 T2V)
+
+```bash
+curl http://localhost:30000/v1/video/generations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A cat walking through a garden",
+    "size": "832x480",
+    "num_frames": 81,
+    "num_inference_steps": 50,
+    "response_format": "b64_json"
+  }' | python3 -c "import sys, json, base64; open('output.mp4', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
+```
+
+### Image-to-Video (Wan 2.2 I2V)
+
+```bash
+curl -s -X POST "http://localhost:30000/v1/video/generations" \
+  -F "image=@input.jpg" \
+  -F "prompt=The scene comes alive with gentle motion" \
+  -F "size=832x480" \
+  -F "num_frames=81" \
+  -F "response_format=b64_json" \
+  | python3 -c "import sys, json, base64; open('output.mp4', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
+```
 
 ### Python Examples
 
@@ -241,6 +323,69 @@ print("Fast preview saved")
 | `num_inference_steps` | 20 | 50 | 100 |
 | `guidance_scale` | 1.0 | 1.5 | 2.0 |
 
+#### Text-to-Video (Wan 2.2)
+
+```python
+import requests
+import base64
+
+BASE_URL = "http://localhost:30000"
+
+response = requests.post(
+    f"{BASE_URL}/v1/video/generations",
+    json={
+        "prompt": "A cat walking through a beautiful garden with flowers",
+        "size": "832x480",
+        "num_frames": 81,
+        "num_inference_steps": 50,
+        "guidance_scale": 5.0,
+        "response_format": "b64_json"
+    },
+    timeout=1200  # Video generation takes longer
+)
+
+data = response.json()
+video_bytes = base64.b64decode(data["data"][0]["b64_json"])
+
+with open("output.mp4", "wb") as f:
+    f.write(video_bytes)
+
+print("Video saved to output.mp4")
+```
+
+#### Image-to-Video (Wan 2.2 I2V)
+
+```python
+import requests
+import base64
+
+BASE_URL = "http://localhost:30000"
+
+with open("input.jpg", "rb") as f:
+    files = {"image": ("input.jpg", f, "image/jpeg")}
+    data = {
+        "prompt": "The scene comes alive with gentle motion",
+        "size": "832x480",
+        "num_frames": 81,
+        "response_format": "b64_json"
+    }
+    response = requests.post(
+        f"{BASE_URL}/v1/video/generations",
+        files=files,
+        data=data,
+        timeout=1200
+    )
+
+if response.status_code == 200:
+    result = response.json()
+    video_bytes = base64.b64decode(result["data"][0]["b64_json"])
+    with open("output.mp4", "wb") as f:
+        f.write(video_bytes)
+    print("Video saved to output.mp4")
+else:
+    print(f"Error: {response.text}")
+```
+
 #### Health Check and List Models
 
 ```python
@@ -301,16 +446,26 @@ print("Edited image saved to edited.png")
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MODEL_PATH` | (required) | Local path to GLM-Image model |
+| `MODEL_PATH` | (required) | Local path to model (GLM-Image or Wan 2.2) |
 | `HF_HOME` | /app/models | Model cache directory |
 | `HF_TOKEN` | - | HuggingFace token (if needed) |
 
 ## Tips
 
+### Image Generation (GLM-Image)
+
 - **Text rendering**: Enclose text in quotation marks in your prompt (e.g., `"Hello World"`)
 - **Dimensions**: Must be divisible by 32 (e.g., 1024x1024, 1152x896, 896x1152)
 - **Quality**: Increase `num_inference_steps` (50-100) for better results
 - **Reproducibility**: Use same `seed` value to get identical outputs
+
+### Video Generation (Wan 2.2)
+
+- **Dimensions**: Common sizes are 832x480 (landscape) or 480x832 (portrait)
+- **Frame count**: 81 frames at 16fps = ~5 second video
+- **Model selection**: Use T2V for text-only, I2V for animating a still image, TI2V for text+image
+- **Memory**: Video generation requires significant GPU VRAM (~40GB+ for A14B models)
+- **Quality**: Increase `num_inference_steps` (50-100) for smoother motion
 
 ## Known Issues
 

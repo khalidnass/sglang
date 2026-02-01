@@ -4,20 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GLM-Image Server using SGLang - a Docker container that serves the [GLM-Image](https://huggingface.co/zai-org/GLM-Image) diffusion model with OpenAI-compatible API endpoints. Designed for offline/OpenShift deployment.
+GLM-Image + Wan 2.2 Server using SGLang - a Docker container that serves diffusion models with OpenAI-compatible API endpoints. Designed for offline/OpenShift deployment.
+
+### Supported Models (v0.5.0)
+- [GLM-Image](https://huggingface.co/zai-org/GLM-Image) - image generation/editing
+- [Wan 2.2 T2V](https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B-Diffusers) - text-to-video
+- [Wan 2.2 I2V](https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B-Diffusers) - image-to-video
+- [Wan 2.2 TI2V](https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B-Diffusers) - text+image-to-video
 
 ## Commands
 
 ### Build and run
 ```bash
-./build.sh                    # Build image tagged with git tag (e.g., glm-image-sglang:v0.4.4)
-docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/GLM-Image -v ./models:/app/models glm-image-sglang:v0.4.4
+./build.sh                    # Build image tagged with git tag (e.g., glm-image-sglang:v0.5.0)
+
+# Run with GLM-Image
+docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/GLM-Image -v ./models:/app/models glm-image-sglang:v0.5.0
+
+# Run with Wan 2.2 T2V
+docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/Wan2.2-T2V-A14B-Diffusers -v ./models:/app/models glm-image-sglang:v0.5.0
 ```
 
 ### Save/load Docker image (offline deployment)
 ```bash
-docker save glm-image-sglang:v0.4.4 -o glm-image-sglang-v0.4.4.tar
-docker load -i glm-image-sglang-v0.4.4.tar
+docker save glm-image-sglang:v0.5.0 -o glm-image-sglang-v0.5.0.tar
+docker load -i glm-image-sglang-v0.5.0.tar
 ```
 
 ### Test the API
@@ -42,13 +53,13 @@ Single devel image Docker build:
   - Image size ~11GB (vs ~6GB for multi-stage, negligible vs ~20GB model)
 - **build.sh** - Pulls devel base image, builds with `--progress=plain` to show output. Tags image with current git tag or short commit hash. Uses `MAX_JOBS=2` to limit parallel compilation.
 - **download-packages.sh** - Downloads pip packages to `pip-cache/` (for reference/offline scenarios, but Dockerfile uses git URLs directly)
-- **SGLang server** - Port 30000, OpenAI-compatible API (`/v1/images/generations`, `/v1/images/edits`)
+- **SGLang server** - Port 30000, OpenAI-compatible API (`/v1/images/generations`, `/v1/images/edits`, `/v1/video/generations`)
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MODEL_PATH` | (required) | Local path to GLM-Image model |
+| `MODEL_PATH` | (required) | Local path to model (GLM-Image or Wan 2.2) |
 | `HF_HOME` | /app/models | Model cache directory |
 | `HF_TOKEN` | - | HuggingFace token if needed |
 
@@ -67,7 +78,7 @@ Single devel image Docker build:
 - Tag `sglang-v0.5.8` exists for reference but Dockerfile correctly uses main branch
 
 ### Docker tagging
-- **Do NOT use `latest` tag** - always use git tag version (e.g., `glm-image-sglang:v0.4.4`)
+- **Do NOT use `latest` tag** - always use git tag version (e.g., `glm-image-sglang:v0.5.0`)
 
 ### Pod restarts during model loading (OpenShift/Kubernetes)
 - Model loading takes ~2 minutes

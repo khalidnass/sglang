@@ -1,5 +1,5 @@
-# GLM-Image Server using SGLang
-# Following OFFICIAL installation from https://huggingface.co/zai-org/GLM-Image
+# GLM-Image + Wan 2.2 Server using SGLang
+# v0.5.0 - Adds Wan 2.2 video generation support
 #
 # Single devel image build:
 # - Devel image provides gcc, nvcc, ninja for flash-attn compilation and Triton JIT
@@ -7,6 +7,10 @@
 #
 # Base image includes: Python 3.11, PyTorch 2.9.1, CUDA 12.8, cuDNN 9
 # Target: H20 (production), A100 (testing)
+#
+# Supported models:
+# - GLM-Image (image generation/editing)
+# - Wan 2.2 T2V/I2V/TI2V (video generation)
 #
 # Run (OpenShift/offline):
 #   Set MODEL_PATH env var to your mounted model path
@@ -66,6 +70,35 @@ ENV HF_HUB_OFFLINE=1
 ENV MODEL_PATH=
 
 EXPOSE 30000
+
+# ============================================
+# Wan 2.2 Video Generation Support (v0.5.0)
+# ============================================
+
+# System dependencies for Wan 2.2
+# - ffmpeg: video encoding/decoding
+# - libgl1-mesa-glx: OpenCV dependency (libGL.so.1)
+# - libglib2.0-0: OpenCV dependency (GLib)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies for Wan 2.2
+# - opencv-python: image/video processing
+# - imageio[ffmpeg], imageio-ffmpeg: video export (diffusers export_to_video)
+# - easydict: configuration handling
+# - ftfy: text processing
+RUN pip install --no-cache-dir \
+    opencv-python \
+    "imageio[ffmpeg]" \
+    imageio-ffmpeg \
+    easydict \
+    ftfy
+
+# Verify Wan 2.2 pipeline is available
+RUN python -c "from diffusers import WanPipeline; print('WanPipeline OK')"
 
 # OpenShift compatibility: run as arbitrary UID with group 0
 RUN chgrp -R 0 /app && chmod -R g=u /app
