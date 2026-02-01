@@ -101,10 +101,10 @@ curl http://localhost:30000/v1/images/generations \
 ```bash
 curl -s -X POST "http://localhost:30000/v1/images/edits" \
   -F "model=zai-org/GLM-Image" \
-  -F "image=@input.jpg" \
-  -F "prompt=Replace the background with a snow forest" \
+  -F "image=@cond.jpg" \
+  -F "prompt=Replace the background of the snow forest with an underground station featuring an automatic escalator." \
   -F "response_format=b64_json" \
-  | python3 -c "import sys, json, base64; open('edited.png', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
+  | python3 -c "import sys, json, base64; open('output_i2i.png', 'wb').write(base64.b64decode(json.load(sys.stdin)['data'][0]['b64_json']))"
 ```
 
 > **Note**: Image editing may have issues in some SGLang versions. If you get a `RuntimeError: Model generation returned no output`, try updating SGLang or use text-to-image generation instead.
@@ -169,11 +169,11 @@ import base64
 
 BASE_URL = "http://localhost:30000"
 
-with open("input.jpg", "rb") as f:
-    files = {"image": ("input.jpg", f, "image/jpeg")}
+with open("cond.jpg", "rb") as f:
+    files = {"image": ("cond.jpg", f, "image/jpeg")}
     data = {
         "model": "zai-org/GLM-Image",
-        "prompt": "Replace the background with a snow forest",
+        "prompt": "Replace the background of the snow forest with an underground station featuring an automatic escalator.",
         "response_format": "b64_json"
     }
     response = requests.post(f"{BASE_URL}/v1/images/edits", files=files, data=data, timeout=600)
@@ -181,9 +181,9 @@ with open("input.jpg", "rb") as f:
 if response.status_code == 200:
     result = response.json()
     img_bytes = base64.b64decode(result["data"][0]["b64_json"])
-    with open("edited.png", "wb") as f:
+    with open("output_i2i.png", "wb") as f:
         f.write(img_bytes)
-    print("Edited image saved to edited.png")
+    print("Edited image saved to output_i2i.png")
 else:
     print(f"Error: {response.text}")
 ```
