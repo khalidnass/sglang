@@ -1,0 +1,19 @@
+# Docker image tarballs
+*.tar
+
+# Pip cache (downloaded packages)
+pip-cache/
+
+# Models directory
+models/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Claude settings
+.claude/
