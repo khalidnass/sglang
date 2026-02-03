@@ -65,12 +65,13 @@ ENV MODEL_PATH=
 
 EXPOSE 30000
 
+# Copy pre-built caches from /root to writable HOME (flashinfer kernels, pip config)
+RUN cp -r /root/.cache /sgl-workspace/sglang/.cache \
+    && cp -r /root/.config /sgl-workspace/sglang/.config
+
 # OpenShift compatibility: 777 for all dirs that app might use
-# Create cache dirs inside HOME (libraries use $HOME/.cache, $HOME/.local, etc.)
-RUN mkdir -p /sgl-workspace/sglang/.cache \
-             /sgl-workspace/sglang/.local \
+RUN mkdir -p /sgl-workspace/sglang/.local \
              /sgl-workspace/sglang/.triton \
-             /sgl-workspace/sglang/.config \
              /sgl-workspace/sglang/.huggingface \
     && chmod -R 777 /sgl-workspace
 
