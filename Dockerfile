@@ -55,6 +55,7 @@ RUN python -c "from diffusers import WanPipeline; print('WanPipeline OK')"
 WORKDIR /sgl-workspace/sglang
 RUN mkdir -p /sgl-workspace/sglang/models
 
+ENV HOME=/sgl-workspace/sglang
 ENV PYTHONUNBUFFERED=1
 ENV HF_HOME=/sgl-workspace/sglang/models
 ENV HF_HUB_OFFLINE=1
