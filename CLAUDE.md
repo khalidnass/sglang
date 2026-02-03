@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Repository
+
+https://github.com/khalidnass/sglang
+
 ## Project Overview
 
 GLM-Image + Wan 2.2 Server using SGLang - a Docker container that serves diffusion models with OpenAI-compatible API endpoints. Designed for offline/OpenShift deployment.
