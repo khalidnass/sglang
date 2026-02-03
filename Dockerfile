@@ -69,17 +69,20 @@ EXPOSE 30000
 # Includes: .cache (flashinfer, pip), .cargo, .rustup, .config, .bashrc, .zshrc, etc.
 RUN cp -a /root/. /sgl-workspace/sglang/
 
+# Copy /opt/sglang configs to HOME (.gitconfig, .vimrc, .tmux.conf)
+RUN cp -a /opt/sglang/. /sgl-workspace/sglang/
+
 # Create additional dirs that may be needed at runtime
 RUN mkdir -p /sgl-workspace/sglang/.local \
              /sgl-workspace/sglang/.triton \
              /sgl-workspace/sglang/.huggingface
 
 # OpenShift compatibility: 777 for all dirs that app might use
-RUN chmod -R 777 /sgl-workspace
+RUN chmod -R 777 /sgl-workspace /opt/sglang
 
 # Also create root-level dirs as fallback (some tools ignore HOME)
 RUN mkdir -p /tmp /.cache /.triton /.config /.local \
-    && chmod 777 /tmp /.cache /.triton /.config /.local
+    && chmod 777 /tmp /.cache /.triton /.config /.local /var/tmp
 
 USER 1001
 
