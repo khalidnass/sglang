@@ -65,15 +65,17 @@ ENV MODEL_PATH=
 
 EXPOSE 30000
 
-# Copy pre-built caches from /root to writable HOME (flashinfer kernels, pip config)
-RUN cp -r /root/.cache /sgl-workspace/sglang/.cache \
-    && cp -r /root/.config /sgl-workspace/sglang/.config
+# Copy everything from /root to writable HOME so OpenShift runs like official image
+# Includes: .cache (flashinfer, pip), .cargo, .rustup, .config, .bashrc, .zshrc, etc.
+RUN cp -a /root/. /sgl-workspace/sglang/
 
-# OpenShift compatibility: 777 for all dirs that app might use
+# Create additional dirs that may be needed at runtime
 RUN mkdir -p /sgl-workspace/sglang/.local \
              /sgl-workspace/sglang/.triton \
-             /sgl-workspace/sglang/.huggingface \
-    && chmod -R 777 /sgl-workspace
+             /sgl-workspace/sglang/.huggingface
+
+# OpenShift compatibility: 777 for all dirs that app might use
+RUN chmod -R 777 /sgl-workspace
 
 # Also create root-level dirs as fallback (some tools ignore HOME)
 RUN mkdir -p /tmp /.cache /.triton /.config /.local \
