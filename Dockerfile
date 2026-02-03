@@ -51,11 +51,12 @@ RUN python -c "from transformers import GlmImageForConditionalGeneration; print(
 # Verify Wan 2.2 pipeline is available
 RUN python -c "from diffusers import WanPipeline; print('WanPipeline OK')"
 
-WORKDIR /app
-RUN mkdir -p /app/models
+# Use same WORKDIR as official SGLang image
+WORKDIR /sgl-workspace/sglang
+RUN mkdir -p /sgl-workspace/sglang/models
 
 ENV PYTHONUNBUFFERED=1
-ENV HF_HOME=/app/models
+ENV HF_HOME=/sgl-workspace/sglang/models
 ENV HF_HUB_OFFLINE=1
 
 # MODEL_PATH must be set by user at runtime
@@ -63,9 +64,9 @@ ENV MODEL_PATH=
 
 EXPOSE 30000
 
-# OpenShift compatibility: run as arbitrary UID with group 0
-RUN chgrp -R 0 /app && chmod -R g=u /app
-RUN mkdir -p /tmp /.cache /.triton /.config && chmod 775 /tmp /.cache /.triton /.config
+# OpenShift compatibility: 777 for all dirs that app might use
+RUN chmod -R 777 /sgl-workspace
+RUN mkdir -p /tmp /.cache /.triton /.config /.local && chmod 777 /tmp /.cache /.triton /.config /.local
 USER 1001
 
 CMD ["sh", "-c", "sglang serve --model-path $MODEL_PATH --port 30000 --host 0.0.0.0"]

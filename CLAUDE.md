@@ -19,10 +19,10 @@ Docker container serving diffusion models (GLM-Image, Wan 2.2) via SGLang with O
 ./build.sh
 
 # Run with GLM-Image
-docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/GLM-Image -v ./models:/app/models glm-image-sglang:v0.6.0
+docker run --gpus all -p 30000:30000 -e MODEL_PATH=/sgl-workspace/sglang/models/GLM-Image -v ./models:/sgl-workspace/sglang/models glm-image-sglang:v0.6.0
 
 # Run with Wan 2.2 T2V
-docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/Wan2.2-T2V-A14B-Diffusers -v ./models:/app/models glm-image-sglang:v0.6.0
+docker run --gpus all -p 30000:30000 -e MODEL_PATH=/sgl-workspace/sglang/models/Wan2.2-T2V-A14B-Diffusers -v ./models:/sgl-workspace/sglang/models glm-image-sglang:v0.6.0
 
 # Test API
 curl http://localhost:30000/health
@@ -48,7 +48,7 @@ docker load -i glm-image-sglang-v0.6.0.tar
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MODEL_PATH` | (required) | Path to model directory |
-| `HF_HOME` | /app/models | Model cache directory |
+| `HF_HOME` | /sgl-workspace/sglang/models | Model cache directory |
 | `HF_HUB_OFFLINE` | 1 | Air-gapped mode (set in image) |
 
 ## Critical Constraints

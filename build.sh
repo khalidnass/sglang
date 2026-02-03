@@ -15,4 +15,4 @@ echo "=== Building $IMAGE_NAME:$GIT_TAG ==="
 docker build --progress=plain -t $IMAGE_NAME:$GIT_TAG .
 
 echo "=== Done ==="
-echo "Run with: docker run --gpus all -p 30000:30000 -e MODEL_PATH=/app/models/GLM-Image -v ./models:/app/models $IMAGE_NAME:$GIT_TAG"
+echo "Run with: docker run --gpus all -p 30000:30000 -e MODEL_PATH=/sgl-workspace/sglang/models/GLM-Image -v ./models:/sgl-workspace/sglang/models $IMAGE_NAME:$GIT_TAG"

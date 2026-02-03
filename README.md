@@ -35,9 +35,9 @@ The v0.6.0 image is based on the official SGLang image with modifications for GL
 | **easydict** | Not installed | 1.13 |
 | **ftfy** | Not installed | 6.3.1 |
 | **HF_HUB_OFFLINE** | Not set | `1` (air-gapped support) |
-| **HF_HOME** | Not set | `/app/models` |
+| **HF_HOME** | Not set | `/sgl-workspace/sglang/models` |
 | **User** | root (UID 0) | 1001 (non-root for OpenShift) |
-| **WORKDIR** | `/sgl-workspace/sglang` | `/app` |
+| **WORKDIR** | `/sgl-workspace/sglang` | Same |
 
 ### Why These Changes?
 
@@ -60,24 +60,24 @@ The v0.6.0 image is based on the official SGLang image with modifications for GL
 **GLM-Image (image generation):**
 ```bash
 docker run --gpus all -p 30000:30000 \
-  -e MODEL_PATH=/app/models/GLM-Image \
-  -v ./models:/app/models \
+  -e MODEL_PATH=/sgl-workspace/sglang/models/GLM-Image \
+  -v ./models:/sgl-workspace/sglang/models \
   glm-image-sglang:v0.6.0
 ```
 
 **Wan 2.2 T2V (text-to-video):**
 ```bash
 docker run --gpus all -p 30000:30000 \
-  -e MODEL_PATH=/app/models/Wan2.2-T2V-A14B-Diffusers \
-  -v ./models:/app/models \
+  -e MODEL_PATH=/sgl-workspace/sglang/models/Wan2.2-T2V-A14B-Diffusers \
+  -v ./models:/sgl-workspace/sglang/models \
   glm-image-sglang:v0.6.0
 ```
 
 **Wan 2.2 I2V (image-to-video):**
 ```bash
 docker run --gpus all -p 30000:30000 \
-  -e MODEL_PATH=/app/models/Wan2.2-I2V-A14B-Diffusers \
-  -v ./models:/app/models \
+  -e MODEL_PATH=/sgl-workspace/sglang/models/Wan2.2-I2V-A14B-Diffusers \
+  -v ./models:/sgl-workspace/sglang/models \
   glm-image-sglang:v0.6.0
 ```
 
@@ -93,8 +93,8 @@ docker run --gpus all -p 30000:30000 \
 ```bash
 docker load -i glm-image-sglang-v0.6.0.tar
 docker run --gpus all -p 30000:30000 \
-  -e MODEL_PATH=/app/models/GLM-Image \
-  -v ./models:/app/models \
+  -e MODEL_PATH=/sgl-workspace/sglang/models/GLM-Image \
+  -v ./models:/sgl-workspace/sglang/models \
   glm-image-sglang:v0.6.0
 ```
 
@@ -473,7 +473,7 @@ print("Edited image saved to edited.png")
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MODEL_PATH` | (required) | Local path to model (GLM-Image or Wan 2.2) |
-| `HF_HOME` | /app/models | Model cache directory |
+| `HF_HOME` | /sgl-workspace/sglang/models | Model cache directory |
 | `HF_TOKEN` | - | HuggingFace token (if needed) |
 
 ## Tips
