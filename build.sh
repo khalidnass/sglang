@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build script for GLM-Image Docker image
-# v0.6.0 - Uses official SGLang Docker image as base
+# Uses official SGLang Docker image as base
 
 set -e
 

@@ -1,5 +1,5 @@
 # GLM-Image + Wan 2.2 Server using SGLang
-# v0.6.0 - Uses official SGLang Docker image as base
+# Uses official SGLang Docker image as base
 #
 # Official SGLang image includes:
 # - SGLang with diffusion support
