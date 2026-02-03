@@ -66,8 +66,18 @@ ENV MODEL_PATH=
 EXPOSE 30000
 
 # OpenShift compatibility: 777 for all dirs that app might use
-RUN chmod -R 777 /sgl-workspace
-RUN mkdir -p /tmp /.cache /.triton /.config /.local && chmod 777 /tmp /.cache /.triton /.config /.local
+# Create cache dirs inside HOME (libraries use $HOME/.cache, $HOME/.local, etc.)
+RUN mkdir -p /sgl-workspace/sglang/.cache \
+             /sgl-workspace/sglang/.local \
+             /sgl-workspace/sglang/.triton \
+             /sgl-workspace/sglang/.config \
+             /sgl-workspace/sglang/.huggingface \
+    && chmod -R 777 /sgl-workspace
+
+# Also create root-level dirs as fallback (some tools ignore HOME)
+RUN mkdir -p /tmp /.cache /.triton /.config /.local \
+    && chmod 777 /tmp /.cache /.triton /.config /.local
+
 USER 1001
 
 CMD ["sh", "-c", "sglang serve --model-path $MODEL_PATH --port 30000 --host 0.0.0.0"]
